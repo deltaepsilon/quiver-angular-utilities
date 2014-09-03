@@ -1,13 +1,11 @@
 {
-	"name": "quiver-angular-utilities",
-	"version": "1.0.0",
+	"name": "quiver-angular-utilities-demo",
+	"version": "0.0.0",
 	"authors": [
 		"Chris Esplin <chris@quiver.is>"
 	],
-	"description": "A set of useful AngularJS utilities",
+	"description": "Demo",
 	"keywords": [
-		"angular",
-		"Angula"
 	],
 	"license": "MIT",
 	"ignore": [
@@ -18,7 +16,10 @@
 		"tests"
 	],
 	"dependencies": {
-		"angular":"~1.2.0"
+		"angular":"~1.2.0",
+		"angular-sanitize":"~1.2.0",
+		"angular-route":"~1.2.0",
+		"angular-touch":"~1.2.0"
 	},
 	"devDependencies": {
 	}
