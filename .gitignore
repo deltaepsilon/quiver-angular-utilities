@@ -1,4 +1,3 @@
-# generic (system) files/extensions we don't want
 *.seed
 *.log
 *.csv
@@ -12,8 +11,4 @@ lib-cov
 pids
 logs
 results
-
-node_modules
-
-#Actually, need to track these for site to run on Github Pages..
-#bower_components
+bower_components

@@ -1,26 +1,29 @@
 {
-	"name": "quiver-angular-utilities-demo",
-	"version": "0.0.0",
-	"authors": [
-		"Chris Esplin <chris@quiver.is>"
-	],
-	"description": "Demo",
-	"keywords": [
-	],
-	"license": "MIT",
-	"ignore": [
-		"**/.*",
-		"node_modules",
-		"bower_components",
-		"test",
-		"tests"
-	],
-	"dependencies": {
-		"angular":"~1.2.0",
-		"angular-sanitize":"~1.2.0",
-		"angular-route":"~1.2.0",
-		"angular-touch":"~1.2.0"
-	},
-	"devDependencies": {
-	}
+  "name": "quiver-angular-utilities",
+  "version": "0.0.0",
+  "authors": [
+    "Chris Esplin <chris@quiver.is>"
+  ],
+  "description": "Demo",
+  "keywords": [],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "main": "./utilities.js",
+  "dependencies": {
+    "angular": "~1.2.0",
+    "angular-notifications": "https://github.com/deltaepsilon/angular-notifications.git#master",
+    "firebase": "~1.0.21",
+    "angularfire": "~0.8.2",
+    "moment": "~2.8.2"
+  },
+  "devDependencies": {},
+  "resolutions": {
+    "angular": "~1.2.0"
+  }
 }
