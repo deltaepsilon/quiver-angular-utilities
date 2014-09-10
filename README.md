@@ -125,6 +125,13 @@ The ```attributes``` tag accepts a map with keys for ```embed```, ```img```, and
 <a href="https://s3.amazonaws.com/{{ files.Name }}/{{ file.Key }}" target="_blank" qv-media="https://s3.amazonaws.com/{{ files.Name }}/{{ file.Key }}" alt="{{ file.Key }}" attributes="{embed: {width: '100px', height: '100px'}, img: {'max-height': '100px'}, video: {width: '120ox'}}"></a>
 ```
 
+###### qv-select-text
+Add ```qv-select-text``` to any element that can accept focus (usually input elements). Focusing on the element will now select all of the element's text. This great for quick copy/paste actions.
+
+```
+<input type="text" ng-model="someUrlToCopy" qv-select-text/>
+```
+
 ### Services
 
 ###### UserService

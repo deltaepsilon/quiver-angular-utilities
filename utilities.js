@@ -182,6 +182,19 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
       }
     };
   })
+  .directive('qvSelectText', function ($timeout) {
+    return {
+      restrict: 'A',
+      link: function postLink(scope, element, attrs) {
+        element.on('focus', function (e) {
+          $timeout(function () {
+            e.target.select();
+          });
+
+        });
+      }
+    };
+  })
   .service('UserService', function ($q, $firebase, $firebaseSimpleLogin, env) {
     var firebaseEndpoint = env.firebase,
       firebase = new Firebase(firebaseEndpoint),
