@@ -73,16 +73,16 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
       restrict: 'A',
       link: function postLink(scope, element, attrs) {
         var debounceDelay = parseInt(attrs.qvFullPage),
-          body = angular.element(document.body),
+          target = angular.element(attrs.target || document.body),
           setMinHeight = function () {
             var parentHeight = element.parent().height(),
-              bodyHeight = body.height(),
+              targetHeight = target.height(),
               elementHeight = element.height();
 
-            element.css('min-height', bodyHeight - (parentHeight - elementHeight));
+            element.css('min-height', targetHeight - (parentHeight - elementHeight));
           };
 
-        $timeout(setMinHeight);
+        $timeout(setMinHeight, parseInt(attrs.delay) || 0);
 
 
         if (!debounceDelay && debounceDelay !== 0) { // Default debounce if unspecified or invalid
@@ -132,6 +132,53 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
             angular.element(document.body).find(attrs.qvFocus).focus();
           });
         });
+      }
+    };
+  })
+  .directive('qvMedia', function () {
+    var img = ['jpg', 'jpeg', 'png', 'gif'],
+      video = ['mp4', 'webm'],
+      embed = ['pdf'],
+      SUFFIX_REGEX = /\.(\w+)$/;
+    return {
+      restrict: 'A',
+      link: function postLink(scope, element, attrs) {
+        var matches = attrs.qvMedia.match(SUFFIX_REGEX),
+          suffix = matches && matches.length ? matches[1] : '',
+          isImg = !!~img.indexOf(suffix),
+          isVideo = !!~video.indexOf(suffix),
+          isEmbed = !!~embed.indexOf(suffix),
+          guts,
+          attributesObj = attrs.attributes ? scope.$eval(attrs.attributes) : {},
+          attributes,
+          keys,
+          i;
+
+        if (isImg) {
+          guts = angular.element('<img/>');
+          attributes = attributesObj.img;
+        } else if (isVideo) {
+          guts = angular.element('<video/>');
+          attributes = attributesObj.video;
+        } else if (isEmbed) {
+          guts = angular.element('<embed/>');
+          attributes = attributesObj.embed;
+        } else {
+          console.warn('File type not identified', matches);
+        }
+
+        keys = Object.keys(attributes);
+        i = keys.length;
+
+        while (i--) {
+          guts.attr(keys[i], attributes[keys[i]]);
+        }
+
+        guts.attr('src', attrs.qvMedia);
+        guts.attr('alt', attrs.alt);
+
+        element.append(guts);
+
       }
     };
   })
