@@ -93,31 +93,37 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
       }
     };
   })
-  .directive('qvConfirm', function (_) {
+  .directive('qvConfirm', function ($timeout) {
     return {
       restrict: 'A',
       link: function postLink(scope, element, attrs) {
-        var confirmations = attrs.confirmations ? scope.$eval(attrs.confirmations) : ['Click to confirm'],
-          buttonText = element.text(),
-          stack = confirmations.slice(0),
-          body = angular.element(document.body),
-          handleBodyClicks = function (e) {
-            if (e.target != element[0]) {
-              stack = confirmations.slice(0);
-              element.text(buttonText);
+        $timeout(function () {
+          var confirmations = attrs.confirmations ? scope.$eval(attrs.confirmations) : ['Click to confirm'],
+            buttonHtml = element.html(),
+            stack = confirmations.slice(0),
+            body = angular.element(document.body),
+            handleBodyClicks = function (e) {
+              if (e.target != element[0] && !angular.element.contains(element[0], e.target)) {
+                stack = confirmations.slice(0);
+                element.html(buttonHtml);
+                body.off('click', handleBodyClicks);
+              }
+            };
+
+          element.on('click', function () {
+
+
+            if (stack.length) {
+              element.text(stack.shift());
+              $timeout(function () { // Gotta skip the initial click that changed the content of the element
+                body.on('click', handleBodyClicks);
+              });
+
+            } else {
               body.off('click', handleBodyClicks);
+              scope.$eval(attrs.qvConfirm);
             }
-          };
-
-        element.on('click', function () {
-          body.on('click', handleBodyClicks);
-
-          if (stack.length) {
-            element.text(stack.shift());
-          } else {
-            body.off('click', handleBodyClicks);
-            scope.$eval(attrs.qvConfirm);
-          }
+          });
         });
 
       }
@@ -136,7 +142,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
     };
   })
   .directive('qvMedia', function () {
-    var img = ['jpg', 'jpeg', 'png', 'gif'],
+    var img = ['jpg', 'jpeg', 'png', 'gif', 'tiff', 'ico'],
       video = ['mp4', 'webm'],
       embed = ['pdf'],
       SUFFIX_REGEX = /\.(\w+)$/;
@@ -144,7 +150,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
       restrict: 'A',
       link: function postLink(scope, element, attrs) {
         var matches = attrs.qvMedia.match(SUFFIX_REGEX),
-          suffix = matches && matches.length ? matches[1] : '',
+          suffix = matches && matches.length ? matches[1].toLowerCase() : '',
           isImg = !!~img.indexOf(suffix),
           isVideo = !!~video.indexOf(suffix),
           isEmbed = !!~embed.indexOf(suffix),
@@ -164,7 +170,9 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
           guts = angular.element('<embed/>');
           attributes = attributesObj.embed;
         } else {
-          console.warn('File type not identified', matches);
+          console.warn('File type not identified. Defaulting to img', matches);
+          guts = angular.element('<img/>');
+          attributes = attributesObj.img;
         }
 
         keys = Object.keys(attributes);
@@ -192,6 +200,21 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
           });
 
         });
+      }
+    };
+  })
+  .directive('qvMeter', function () {
+    return {
+      restrict: 'A',
+      scope: {
+        percent: "=qvMeter"
+      },
+      link: function postLink(scope, element, attrs) {
+        var setStyle = function () {
+          element.css({'width': (Math.min(scope.percent, 1) * 100) + '%'});
+        };
+
+        scope.$watch('percent', setStyle);
       }
     };
   })

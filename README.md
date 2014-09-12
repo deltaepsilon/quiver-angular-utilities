@@ -132,6 +132,17 @@ Add ```qv-select-text``` to any element that can accept focus (usually input ele
 <input type="text" ng-model="someUrlToCopy" qv-select-text/>
 ```
 
+###### qv-meter
+Pass in a percentage—between 0 and 1 inclusive—and ```qv-meter``` will set the element's ```min-width``` to that percentage. Use it for progress bars like so:
+
+```
+<a class="qv-progress text-x-small success" qv-confirm="deleteFlowFile($flow, file)" confirmations="['Click to Delete']">
+    <span class="meter-text text-black">{{ file.name }}</span>
+    <span class="meter" qv-meter="file.percentComplete"></span>
+</a>
+```
+
+
 ### Services
 
 ###### UserService
