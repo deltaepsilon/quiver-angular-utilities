@@ -143,7 +143,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
   })
   .directive('qvMedia', function () {
     var img = ['jpg', 'jpeg', 'png', 'gif', 'tiff', 'ico'],
-      video = ['mp4', 'webm'],
+      video = ['mp4', 'mpeg', 'webm', 'ogg'],
       embed = ['pdf'],
       SUFFIX_REGEX = /\.(\w+)$/;
     return {
@@ -164,7 +164,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
           guts = angular.element('<img/>');
           attributes = attributesObj.img;
         } else if (isVideo) {
-          guts = angular.element('<video/>');
+          guts = angular.element('<video controls/>');
           attributes = attributesObj.video;
         } else if (isEmbed) {
           guts = angular.element('<embed/>');
