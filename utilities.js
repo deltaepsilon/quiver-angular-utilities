@@ -264,8 +264,6 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
               options = [],
               flag;
 
-            console.log('filtering', scope.exclude);
-
             while (i--) {
               if (!regex || scope.include[i].key.match(regex)) {
 
@@ -289,26 +287,42 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
             return options;
           },
           handleKeyup = function (e) {
-            console.log('e', e.keyCode);
             scope.$apply(function () {
-              if (e.keyCode === 40) { // Arrow down
-                scope.activeIndex = typeof scope.activeIndex === 'undefined' ? 0 : Math.min(scope.options.length - 1, scope.activeIndex + 1);
-              } else if (e.keyCode === 38 && scope.activeIndex) { // Arrow up
-                if (scope.activeIndex === 0) {
-                  delete scope.activeIndex;
-                } else {
-                  scope.activeIndex -= 1;
-                }
-              } else if (e.keyCode === 13 && scope.activeIndex >= 0) {
-                select(scope.activeIndex);
-                delete scope.activeIndex;
-              } else { // Regular old typing
-                scope.options = filter(element.val());
-                if (scope.options.length === 1) {
-                  scope.activeIndex = 0;
-                } else {
-                  delete scope.activeIndex;
-                }
+              switch (e.keyCode) {
+                case 40: // Arrow Down
+                  scope.activeIndex = typeof scope.activeIndex === 'undefined' ? 0 : Math.min(scope.options.length - 1, scope.activeIndex + 1);
+                  break;
+
+                case 38: // Arrow Up
+                  if (scope.activeIndex) {
+                    if (scope.activeIndex === 0) {
+                      delete scope.activeIndex;
+                    } else {
+                      scope.activeIndex -= 1;
+                    }
+                  }
+                  break;
+
+                case 13: // Enter
+                  if (scope.activeIndex >= 0) {
+                    select(scope.activeIndex);
+                    delete scope.activeIndex;
+                  }
+                  break;
+
+                case 27: // Esc
+                  element.blur();
+                  break;
+
+                default:
+                  scope.options = filter(element.val());
+                  if (scope.options.length === 1) {
+                    scope.activeIndex = 0;
+                  } else {
+                    delete scope.activeIndex;
+                  }
+                  break;
+
               }
 
             });
@@ -361,7 +375,6 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
           },
           deactivate = function () {
             $timeout(function () {
-              console.log('deactivate');
               angular.element($window).off('resize', placeUl);
               element.off('keyup', handleKeyup);
               ul.off('click', handleUlClick);
@@ -371,16 +384,13 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
 
           },
           select = function (i) {
-            console.log('select', i);
             delete scope.activeIndex;
             ngModel.$setViewValue(scope.options[i].value);
             ngModel.$render();
 
-
             $timeout(function () {
               element.focus();
             }, 300);
-
 
           };
 
@@ -396,15 +406,12 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
         if (scope.exclude) {
           scope.$watch('exclude', function () {
             $timeout(function () {
+              placeUl();
               scope.options = filter(element.val());
             });
 
           });
         };
-
-
-
-
 
       }
     };
