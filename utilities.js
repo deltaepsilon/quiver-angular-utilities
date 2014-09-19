@@ -218,6 +218,197 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
       }
     };
   })
+  .directive('qvEnter', function ($timeout) {
+    return {
+      restrict: 'A',
+      link: function postLink(scope, element, attrs) {
+        var handleKeyup = function (e) {
+            if (e.keyCode === 13) {
+              $timeout(function () {
+                scope.$eval(attrs.qvEnter);
+              });
+            }
+
+          },
+          ignore = function () {
+            element.off('keyup', handleKeyup);
+            element.off('blur', ignore);
+          },
+          listen = function () {
+            element.on('keyup', handleKeyup);
+            element.on('blur', ignore);
+          };
+
+        element.on('focus', listen);
+
+      }
+    };
+  })
+  .directive('qvTypeAhead', function ($compile, $window, $timeout) {
+    var template = "<ul class='type-ahead' style='position: fixed;' ng-show='options.length'><li ng-repeat='option in options' ng-class='{active: activeIndex==$index}' index='{{ $index }}' value='{{ option.key }}'>{{ option.value }}</li></ul><div>{{ scope.options }}</div>";
+
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      scope: {
+        include: '=',
+        exclude: '='
+      },
+      link: function (scope, element, attrs, ngModel) {
+        // activate on focus, deactivate on blur
+        var parent = element.parent(),
+          filter = function (word) {
+            var i = scope.include.length,
+              j,
+              regex = word ? new RegExp(word, 'gi') : false,
+              options = [],
+              flag;
+
+            console.log('filtering', scope.exclude);
+
+            while (i--) {
+              if (!regex || scope.include[i].key.match(regex)) {
+
+                flag = true
+                j = scope.exclude ? scope.exclude.length : 0;
+                while (j--) {
+                  if (scope.include[i].key === scope.exclude[j].key) {
+                    flag = false;
+                    break;
+
+                  }
+                }
+
+                if (flag) {
+                  options.push(scope.include[i]);
+                }
+              }
+
+            }
+
+            return options;
+          },
+          handleKeyup = function (e) {
+            console.log('e', e.keyCode);
+            scope.$apply(function () {
+              if (e.keyCode === 40) { // Arrow down
+                scope.activeIndex = typeof scope.activeIndex === 'undefined' ? 0 : Math.min(scope.options.length - 1, scope.activeIndex + 1);
+              } else if (e.keyCode === 38 && scope.activeIndex) { // Arrow up
+                if (scope.activeIndex === 0) {
+                  delete scope.activeIndex;
+                } else {
+                  scope.activeIndex -= 1;
+                }
+              } else if (e.keyCode === 13 && scope.activeIndex >= 0) {
+                select(scope.activeIndex);
+                delete scope.activeIndex;
+              } else { // Regular old typing
+                scope.options = filter(element.val());
+                if (scope.options.length === 1) {
+                  scope.activeIndex = 0;
+                } else {
+                  delete scope.activeIndex;
+                }
+              }
+
+            });
+
+          },
+          ul = $compile(template)(scope),
+          placeUl = function () {
+            var offset = element.offset(),
+              topOffset = offset.top + element.outerHeight();
+
+            if (attrs.topOffset) {
+              topOffset += parseInt(attrs.topOffset)
+            }
+
+            ul.css({
+              "position": 'fixed',
+              "top": topOffset,
+              "left": offset.left,
+              "min-width": element.outerWidth(),
+              "z-index": 100
+            });
+          },
+          handleUlClick = function (e) {
+            console.log('handle ul click');
+            var li = angular.element(e.target),
+              index = parseInt(li.attr('index'));
+
+            select(index);
+            $timeout(function () {
+              scope.option = filter(element.val());
+            });
+
+          },
+          activate = function () {
+            console.log('activate');
+            if (attrs.prepopulate) {
+              scope.options = filter(element.val());
+            }
+
+
+            parent.append(ul);
+            $timeout(function () {
+              placeUl();
+            });
+
+
+            angular.element($window).on('resize', placeUl);
+            element.on('keyup', handleKeyup);
+            ul.on('click', handleUlClick);
+          },
+          deactivate = function () {
+            $timeout(function () {
+              console.log('deactivate');
+              angular.element($window).off('resize', placeUl);
+              element.off('keyup', handleKeyup);
+              ul.off('click', handleUlClick);
+              ul.detach();
+            }, 100);
+
+
+          },
+          select = function (i) {
+            console.log('select', i);
+            delete scope.activeIndex;
+            ngModel.$setViewValue(scope.options[i].value);
+            ngModel.$render();
+
+
+            $timeout(function () {
+              element.focus();
+            }, 300);
+
+
+          };
+
+        scope.select = select;
+
+        element.on('focus', activate);
+        element.on('blur', deactivate);
+
+        scope.$watch(attrs.ngModel, function () {
+          console.log('model change');
+        });
+
+        if (scope.exclude) {
+          scope.$watch('exclude', function () {
+            $timeout(function () {
+              scope.options = filter(element.val());
+            });
+
+          });
+        };
+
+
+
+
+
+      }
+    };
+  })
   .service('UserService', function ($q, $firebase, $firebaseSimpleLogin, env) {
     var firebaseEndpoint = env.firebase,
       firebase = new Firebase(firebaseEndpoint),
@@ -333,7 +524,8 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
         changePassword: firebaseSimpleLogin.$changePassword
       };
 
-    }).service('NotificationService', function ($notification, quiverUtilities) {
+    })
+  .service('NotificationService', function ($notification, quiverUtilities) {
       $notification.setSetting('custom', quiverUtilities.notificationConfig);
 
       return {
