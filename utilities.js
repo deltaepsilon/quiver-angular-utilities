@@ -258,6 +258,10 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
         // activate on focus, deactivate on blur
         var parent = element.parent(),
           filter = function (word) {
+            if (attrs.noFilter) {
+              return scope.include;
+            }
+
             var i = scope.include.length,
               j,
               regex = word ? new RegExp(word, 'gi') : false,
@@ -316,7 +320,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
 
                 default:
                   scope.options = filter(element.val());
-                  if (scope.options.length === 1) {
+                  if (scope.option && scope.options.length === 1) {
                     scope.activeIndex = 0;
                   } else {
                     delete scope.activeIndex;
@@ -346,7 +350,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
             });
           },
           handleUlClick = function (e) {
-            console.log('handle ul click');
+//            console.log('handle ul click');
             var li = angular.element(e.target),
               index = parseInt(li.attr('index'));
 
@@ -357,7 +361,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
 
           },
           activate = function () {
-            console.log('activate');
+//            console.log('activate');
             if (attrs.prepopulate) {
               scope.options = filter(element.val());
             }
@@ -385,7 +389,16 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
           },
           select = function (i) {
             delete scope.activeIndex;
-            ngModel.$setViewValue(scope.options[i].value);
+            if (attrs.selection) {
+              if (attrs.selection === 'object') {
+                ngModel.$setViewValue(scope.options[i]);
+              } else {
+                ngModel.$setViewValue(scope.options[i][attrs.selection]);
+              }
+            } else {
+              ngModel.$setViewValue(scope.options[i].key);
+            }
+
             ngModel.$render();
 
             $timeout(function () {
@@ -473,8 +486,16 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
 
             promise.then(function (user) {
               var userObject = $firebase(new Firebase(firebaseEndpoint + '/users/' + user.id)).$asObject();
-              userObject.email = user.email;
-              userObject.$save().then(deferred.resolve, deferred.reject);
+              userObject.$loaded().then(function () {
+                if (!userObject.email) {
+                  userObject.email = user.email;
+                  userObject.$save().then(deferred.resolve, deferred.reject);
+                } else {
+                  deferred.resolve(user);
+                }
+              });
+
+
             });
 
             return deferred.promise;
