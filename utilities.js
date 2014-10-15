@@ -142,7 +142,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
     };
   })
   .directive('qvMedia', function () {
-    var img = ['jpg', 'jpeg', 'png', 'gif', 'tiff', 'ico'],
+    var img = ['jpg', 'jpeg', 'png', 'gif', 'tiff', 'ico', 'svg'],
       video = ['mp4', 'mpeg', 'webm', 'ogg'],
       embed = ['pdf'],
       SUFFIX_REGEX = /\.(\w+)$/;
@@ -430,7 +430,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
     };
   })
   .service('UserService', function ($q, $firebase, $firebaseSimpleLogin, env) {
-    var firebaseEndpoint = env.firebase,
+    var firebaseEndpoint = env.firebase.endpoint || env.firebase,
       firebase = new Firebase(firebaseEndpoint),
       firebaseSimpleLogin = $firebaseSimpleLogin(firebase),
       getUser = function (userId) {
@@ -496,7 +496,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
               });
 
 
-            });
+            }, deferred.reject);
 
             return deferred.promise;
 
