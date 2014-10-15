@@ -38,13 +38,22 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
   })
   .factory('moment', function ($window) {
     return $window.moment;
-  }).factory('Stripe', function ($window) {
+  })
+  .factory('Stripe', function ($window) {
     return $window.Stripe;
-  }).factory('_', function ($window) {
+  })
+  .factory('_', function ($window) {
     return $window._;
-  }).factory('env', function (quiverUtilities) {
+  })
+  .factory('env', function (quiverUtilities) {
       return quiverUtilities.env;
-  }).directive('qvActive', function ($timeout, $state) {
+  })
+  .filter('moment', function (moment) {
+    return function (input, format) {
+      return moment(input).format(format);
+    };
+  })
+  .directive('qvActive', function ($timeout, $state) {
     return {
       restrict: 'A',
       link: function postLink(scope, element, attrs) {
@@ -412,9 +421,9 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
         element.on('focus', activate);
         element.on('blur', deactivate);
 
-        scope.$watch(attrs.ngModel, function () {
-          console.log('model change');
-        });
+//        scope.$watch(attrs.ngModel, function () {
+//          console.log('model change');
+//        });
 
         if (scope.exclude) {
           scope.$watch('exclude', function () {
