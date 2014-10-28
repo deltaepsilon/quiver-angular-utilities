@@ -1,3 +1,4 @@
+
 /**
 @fileOverview
 
@@ -7,7 +8,7 @@
 
 'use strict';
 
-angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notifications'])
+angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notifications', 'ui.router'])
   .provider('quiverUtilities', function () {
     return {
       env: {
@@ -112,15 +113,13 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
             stack = confirmations.slice(0),
             body = angular.element(document.body),
             handleBodyClicks = function (e) {
-              if (e.target != element[0] && !angular.element.contains(element[0], e.target)) {
-                stack = confirmations.slice(0);
-                element.html(buttonHtml);
-                body.off('click', handleBodyClicks);
-              }
+              stack = confirmations.slice(0);
+              element.html(buttonHtml);
+              body.off('click', handleBodyClicks);
             };
 
-          element.on('click', function () {
-
+          element.on('click', function (e) {
+            e.stopPropagation();
 
             if (stack.length) {
               element.text(stack.shift());
@@ -152,7 +151,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
   })
   .directive('qvMedia', function () {
     var img = ['jpg', 'jpeg', 'png', 'gif', 'tiff', 'ico', 'svg'],
-      video = ['mp4', 'mpeg', 'webm', 'ogg'],
+      video = ['mp4', 'mpeg', 'webm', 'ogg', 'mov'],
       embed = ['pdf'],
       SUFFIX_REGEX = /\.(\w+)$/;
     return {
@@ -434,6 +433,35 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
 
           });
         };
+
+      }
+    };
+  })
+  .directive('qvBackgroundImage', function ($state, $rootScope, $timeout) {
+    return {
+      restrict: 'A',
+      scope: {
+        url: '=qvBackgroundImage'
+      },
+      link: function postLink(scope, element, attrs) {
+        $timeout(function () {
+          var states = attrs.states ? scope.$eval(attrs.states) : false,
+            stateHandler = function (e, to, from) {
+              var state = to && to.name ? to.name : $state.current.name,
+              background = 'initial';
+
+              if (scope.url && (!states || ~states.indexOf(state))) {
+                background = 'url(' + scope.url + ')';
+
+              }
+              element.css('background', background);
+            };
+
+          scope.$watch('url', stateHandler);
+          $rootScope.$on('$stateChangeStart', stateHandler);
+
+
+        });
 
       }
     };
