@@ -78,6 +78,16 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
       }
     };
   })
+  .directive('qvDisplay', function ($timeout) {
+    return {
+      restrict: 'A',
+      link: function (scope, element, attrs) {
+        $timeout(function () {
+          element.removeAttr('style');
+        });
+      }
+    }
+  })
   .directive('qvFullPage', function ($timeout, $window, _) {
     return {
       restrict: 'A',
@@ -466,7 +476,27 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
       }
     };
   })
-  .service('UserService', function ($q, $firebase, $firebaseSimpleLogin, env) {
+  .service('ObjectService', function () {
+    var toDestroy = [];
+
+    return {
+      toDestroy: function (obj) {
+        if (obj) {
+          toDestroy.push(obj);
+        }
+      },
+
+      destroy: function () {
+        var i = toDestroy.length;
+
+        while (i--) {
+          toDestroy[i].$destroy();
+        }
+      }
+    }
+
+  })
+  .service('UserService', function ($q, $firebase, $firebaseSimpleLogin, env, ObjectService) {
     var firebaseEndpoint = env.firebase.endpoint || env.firebase,
       firebase = new Firebase(firebaseEndpoint),
       firebaseSimpleLogin = $firebaseSimpleLogin(firebase),
@@ -476,6 +506,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
 
         if (userId) {
           var userObject = $firebase(new Firebase(firebaseEndpoint + '/users/' + userId)).$asObject();
+          ObjectService.toDestroy(userObject);
 
           /*
            * Protect against the case where a user is logged in yet has deleted her email address.
@@ -565,6 +596,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
         },
 
         logOut: function () {
+          ObjectService.destroy();
           return getResolvedPromise(firebaseSimpleLogin.$logout());
         },
 
