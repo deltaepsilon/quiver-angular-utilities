@@ -81,10 +81,29 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
   .directive('qvDisplay', function ($timeout) {
     return {
       restrict: 'A',
+      scope: {
+        qvDisplay: "="
+      },
       link: function (scope, element, attrs) {
-        $timeout(function () {
-          element.removeAttr('style');
-        });
+        console.log(scope.qvDisplay);
+        if (attrs.qvDisplay) {
+          var unbind;
+          $timeout(function () {
+            unbind = scope.$watch('qvDisplay', function () {
+              if (scope.qvDisplay) {
+                element.removeAttr('style');
+                unbind();  
+              }
+              
+            });
+          });
+          
+        } else {
+          $timeout(function () {
+            element.removeAttr('style');
+          });  
+        }
+        
       }
     }
   })
