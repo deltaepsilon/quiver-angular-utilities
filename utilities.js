@@ -43,6 +43,9 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
   .factory('Stripe', function ($window) {
     return $window.Stripe;
   })
+  .factory('braintree', function ($window) {
+    return $window.braintree;
+  })
   .factory('_', function ($window) {
     return $window._;
   })
@@ -85,7 +88,6 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
         qvDisplay: "="
       },
       link: function (scope, element, attrs) {
-        console.log(scope.qvDisplay);
         if (attrs.qvDisplay) {
           var unbind;
           $timeout(function () {
@@ -495,7 +497,20 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
       }
     };
   })
-  .service('ObjectService', function () {
+  .directive('qvToStatic', function () {
+    return {
+      restrict: 'A',
+      link: function (scope, element, attrs) {
+        element.on('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          location.replace(attrs.href || attrs.qvToStatic || '/');
+        });
+        
+      }
+    }
+  })
+  .service('ObjectService', function (_) {
     var toDestroy = [];
 
     return {
@@ -511,6 +526,10 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
         while (i--) {
           toDestroy[i].$destroy();
         }
+      },
+
+      cleanRestangular: function (obj) {
+        return _.omit(obj, ['fromServer', 'parentResource', 'reqParams', 'restangularCollection', 'restangularEtag', 'route']);
       }
     }
 
@@ -519,7 +538,7 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
     var firebaseEndpoint = env.firebase.endpoint || env.firebase,
       firebase = new Firebase(firebaseEndpoint),
       firebaseSimpleLogin = $firebaseSimpleLogin(firebase),
-      getUser = function (userId) {
+      getUser = function (userId, createUserFlag) {
         var userObject,
           promise;
 
@@ -535,14 +554,16 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
            * We may want this reset function to be a bit more elaborate in the future if we determine that more user
            * attributes are essential to the application and should at least receive defaults.
            */
-          userObject.$loaded().then(function (user) {
-            if (!user || !user.email) {
-              firebaseSimpleLogin.$getCurrentUser().then(function (currentUser) {
-                userObject.email = currentUser.email;
-                userObject.$save();
-              });
-            }
-          });
+          if (createUserFlag) {
+            userObject.$loaded().then(function (user) {
+              if (!user || !user.email) {
+                firebaseSimpleLogin.$getCurrentUser().then(function (currentUser) {
+                  userObject.email = currentUser.email;
+                  userObject.$save();
+                });
+              }
+            });  
+          }
 
         } else {
           promise = firebaseSimpleLogin.$getCurrentUser();
