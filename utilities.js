@@ -8,7 +8,7 @@
 
 'use strict';
 
-angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notifications', 'ui.router'])
+angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
   .provider('quiverUtilities', function () {
     return {
       env: {
@@ -55,6 +55,44 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
   .filter('moment', function (moment) {
     return function (input, format) {
       return moment(input).format(format);
+    };
+  })
+  .directive('qvPinned', function ($timeout, $window, _) {
+    return {
+      restrict: 'A',
+      link: function postLink(scope, element, attrs) {
+        element.css('position', 'relative');
+
+        var target = angular.element($window),
+          parent = element.parent(),
+          rawElement = element[0],
+          initialPosition = element.css('position'),
+          fixed = false,
+          limit,
+          on = false,
+          handler = function (e) {
+            var top = rawElement.getBoundingClientRect().top,
+              offsetTop = parent.offset().top,
+              scrollTop = target.scrollTop();        
+
+            if (top < 0) {
+              on = true;
+            } else if (top >= (scrollTop - offsetTop)) {
+              on = false;
+              element.css('top', 0);
+            }
+
+            if (on) {
+              element.css('top', scrollTop - offsetTop);
+            }
+            
+          };
+          
+        target.on('scroll', handler);
+        target.on('resize', handler);
+        $timeout(handler);
+        
+      }
     };
   })
   .directive('qvActive', function ($timeout, $state) {
@@ -108,6 +146,22 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
         
       }
     }
+  })
+  .directive('qvLoading', function ($timeout) {
+    return {
+      restrict: 'A',
+      link: function postLink(scope, element, attrs) {
+        var delay = parseInt(attrs.delay) || 300,
+          target = attrs.target ? angular.element(attrs.target) : element;
+
+        target.on('click', function () {
+          $timeout(function () {
+            element.css('display', 'block');
+          }, delay);
+        });
+
+      }
+    };
   })
   .directive('qvFullPage', function ($timeout, $window, _) {
     return {
@@ -534,134 +588,6 @@ angular.module('DeltaEpsilon.quiver-angular-utilities', ['firebase', 'notificati
     }
 
   })
-  .service('UserService', function ($q, $firebase, $firebaseSimpleLogin, env, ObjectService) {
-    var firebaseEndpoint = env.firebase.endpoint || env.firebase,
-      firebase = new Firebase(firebaseEndpoint),
-      firebaseSimpleLogin = $firebaseSimpleLogin(firebase),
-      getUser = function (userId, createUserFlag) {
-        var userObject,
-          promise;
-
-        if (userId) {
-          var userObject = $firebase(new Firebase(firebaseEndpoint + '/users/' + userId)).$asObject();
-          ObjectService.toDestroy(userObject);
-
-          /*
-           * Protect against the case where a user is logged in yet has deleted her email address.
-           * This function effectively resets the user's email to the email that she used to register if the user or
-           * her email were somehow deleted.
-           *
-           * We may want this reset function to be a bit more elaborate in the future if we determine that more user
-           * attributes are essential to the application and should at least receive defaults.
-           */
-          if (createUserFlag) {
-            userObject.$loaded().then(function (user) {
-              if (!user || !user.email) {
-                firebaseSimpleLogin.$getCurrentUser().then(function (currentUser) {
-                  userObject.email = currentUser.email;
-                  userObject.$save();
-                });
-              }
-            });  
-          }
-
-        } else {
-          promise = firebaseSimpleLogin.$getCurrentUser();
-
-        }
-
-        return userObject || promise;
-
-      },
-      getResolvedPromise = function (resolution) {
-        var deferred = $q.defer();
-        deferred.resolve(resolution);
-        return deferred.promise;
-      };
-
-      return {
-        getUser: getUser,
-
-        logIn: function (email, password, createUserFlag) {
-          var promise = firebaseSimpleLogin.$login('password', {
-            email: email,
-            password: password,
-            rememberMe: true // Override default session length (browser session) to be 30 days.
-          });
-
-          if (createUserFlag) { // Some situations may require user creation at login.
-            var deferred = $q.defer();
-
-            promise.then(function (user) {
-              var userObject = $firebase(new Firebase(firebaseEndpoint + '/users/' + user.id)).$asObject();
-              userObject.$loaded().then(function () {
-                if (!userObject.email) {
-                  userObject.email = user.email;
-                  userObject.$save().then(deferred.resolve, deferred.reject);
-                } else {
-                  deferred.resolve(user);
-                }
-              });
-
-
-            }, deferred.reject);
-
-            return deferred.promise;
-
-          } else {
-            return promise;
-
-          }
-
-        },
-
-        register: function (email, password, createUserFlag) {
-          if (!createUserFlag) {
-            return firebaseSimpleLogin.$createUser(email, password);
-          } else { // Only create a user object at the Firebase root if asked to do so
-
-            var deferred = $q.defer();
-
-            firebaseSimpleLogin.$createUser(email, password).then(function (user) {
-              // Create our own custom user object to house the user's data
-              var userObject = $firebase(new Firebase(firebaseEndpoint + '/users/' + user.id)).$asObject();
-              userObject.email = user.email;
-              userObject.$save().then(deferred.resolve, deferred.reject);
-
-            }, deferred.reject);
-
-            return deferred.promise
-          }
-
-        },
-
-        logOut: function () {
-          ObjectService.destroy();
-          return getResolvedPromise(firebaseSimpleLogin.$logout());
-        },
-
-        resetPassword: function (email) {
-          var deferred = $q.defer();
-
-          // firebaseSimpleLogin.$resetPassword has not yet been implemented in angularfire. We're going it alone.
-          var auth = new FirebaseSimpleLogin(firebase, function (err, user) {
-            console.log('err, user', err, user);
-          });
-          auth.sendPasswordResetEmail(email, function (err, success) {
-            if (err) {
-              deferred.reject(err);
-            } else {
-              deferred.resolve(success);
-            }
-          });
-
-          return deferred.promise;
-        },
-
-        changePassword: firebaseSimpleLogin.$changePassword
-      };
-
-    })
   .service('NotificationService', function ($notification, quiverUtilities) {
       $notification.setSetting('custom', quiverUtilities.notificationConfig);
 
