@@ -57,6 +57,105 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       return moment(input).format(format);
     };
   })
+  .directive('qvLightbox', function ($timeout, _) {
+    return {
+      restrict: 'A',
+      transclude: true,
+      scope: true,
+      template: '<div class="qv-lightbox"><div class="marquee"><div class="floating-button text-white prev show-for-medium-up"><</div><img class="next"><div class="floating-button text-white next show-for-medium-up">></div></div><div class="drawer" ng-transclude></div></div>',
+      link: function postLink(scope, element, attrs) {
+        $timeout(function () {
+          var body = angular.element(document.body),
+            modal = element.find('.qv-lightbox'),
+            marquee = modal.find('.marquee'),
+            image = marquee.find('img'),
+            buttons = marquee.find('.floating-button'),
+            prev = modal.find('.prev'),
+            next = modal.find('.next'),
+            drawer = modal.find('.drawer'),
+            list = drawer.children('ul, ol'),
+            items = list.children('li'),
+            selected = false,
+            open = false,
+            src,
+            selectPrev = function () {
+              selected = selected.prev();
+              if (!selected.length) {
+                selected = items.last();
+              }
+              handleSelect(selected);
+              
+            },
+            selectNext = function () {
+              selected = selected.next();
+              if (!selected.length) {
+                selected = items.first();
+              }
+              handleSelect(selected);
+              
+            },
+            handleKeypress = _.debounce(function (e) {
+              switch (e.keyCode) {
+                case 27:
+                  handleClose();
+                  break;
+                case 37:
+                  selectPrev();
+                  break;
+                case 39:
+                  selectNext();
+                  break;  
+                default:
+                  console.log('unhandled keypress', e.keyCode);
+                  break;
+              }
+
+            }, 100),
+            handleSelect = function (selected) {
+              drawer.find('.selected').removeClass('selected');
+              selected.addClass('selected');
+              image.attr('src', selected.find('img').attr('src'));
+              
+              if (!open) {
+                modal.addClass('open');
+                body.on('keyup', handleKeypress);
+              }
+              
+            },
+            handleClose = function () {
+              body.off('keyup', handleKeypress);
+              modal.removeClass('open');
+              selected = undefined;
+              open = false;
+              image.removeAttr('src');              
+              drawer.find('.selected').removeClass('selected');
+              
+            };
+
+          items.on('click', function (e) {
+            e.stopPropagation();
+            selected = angular.element(e.target).closest('li');
+            handleSelect(selected);
+
+          });
+
+          prev.on('click', function (e) {
+            e.stopPropagation();
+            selectPrev();
+          });
+
+          next.on('click', function (e) {
+            e.stopPropagation();
+            selectNext();
+          });
+
+          element.on('click', handleClose);
+          
+        });
+        
+      }
+    }    
+  })
   .directive('qvPinned', function ($timeout, $window, _) {
     return {
       restrict: 'A',
