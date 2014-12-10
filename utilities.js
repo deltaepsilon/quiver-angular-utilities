@@ -106,7 +106,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
                   selectNext();
                   break;  
                 default:
-                  console.log('unhandled keypress', e.keyCode);
+                  // console.log('unhandled keypress', e.keyCode);
                   break;
               }
 
@@ -132,24 +132,24 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
               
             };
 
-          items.on('click', function (e) {
+          items.on('click tap', function (e) {
             e.stopPropagation();
             selected = angular.element(e.target).closest('li');
             handleSelect(selected);
 
           });
 
-          prev.on('click', function (e) {
+          prev.on('click tap', function (e) {
             e.stopPropagation();
             selectPrev();
           });
 
-          next.on('click', function (e) {
+          next.on('click tap', function (e) {
             e.stopPropagation();
             selectNext();
           });
 
-          element.on('click', handleClose);
+          element.on('click tap', handleClose);
           
         });
         
