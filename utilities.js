@@ -64,7 +64,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       scope: true,
       template: '<div class="qv-lightbox"><div class="marquee"><div class="floating-button text-white prev show-for-medium-up"><</div><img class="next"><div class="floating-button text-white next show-for-medium-up">></div></div><div class="drawer" ng-transclude></div></div>',
       link: function postLink(scope, element, attrs) {
-        $timeout(function () {
+        var bootstrap = function () {
           var body = angular.element(document.body),
             modal = element.find('.qv-lightbox'),
             marquee = modal.find('.marquee'),
@@ -151,7 +151,9 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
 
           element.on('click tap', handleClose);
           
-        });
+        };
+
+        element.one('mouseenter tap', bootstrap);
         
       }
     }    
