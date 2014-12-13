@@ -57,6 +57,31 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       return moment(input).format(format);
     };
   })
+  .directive('qvHighlight', function ($timeout) {
+    return {
+      restrict: 'A',
+      link: function postLink(scope, element, attrs) {
+        var bootstrap = function () {
+          var selector = attrs.selector || attrs.href,
+            target = angular.element(selector),
+            targetClass = attrs.qvHighlight,
+            delay = parseInt(attrs.delay) || 2000;
+          
+          element.on('click', function () {
+            target.addClass(targetClass);
+            $timeout(function () {
+              target.removeClass(targetClass);
+            }, delay);
+
+          });
+          
+        };
+
+        element.one('mouseenter', bootstrap);
+        
+      }
+    }
+  })
   .directive('qvLightbox', function ($timeout, _) {
     return {
       restrict: 'A',
@@ -316,6 +341,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
             } else {
               body.off('click', handleBodyClicks);
               scope.$eval(attrs.qvConfirm);
+              handleBodyClicks();
             }
           });
         });
