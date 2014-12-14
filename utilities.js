@@ -57,6 +57,58 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       return moment(input).format(format);
     };
   })
+  .directive('qvModal', function ($timeout, _) {
+    return {
+      restrict: 'A',
+      transclude: true,
+      template: '<div class="qv-modal" ng-transclude></div>',
+      link: function (scope, element, attrs) {
+        $timeout(function () {
+          var body = angular.element(document.body),
+            modal = element.find('.qv-modal'),
+            selector = attrs.qvModal,
+            openers = angular.element(selector),
+            closers = body.find('[qv-modal-close]'),
+            handleKeypress = _.debounce(function (e) {
+              switch (e.keyCode) {
+                case 27:
+                  close();
+                  break;
+                default:
+                  // console.log('unhandled keypress', e.keyCode);
+                  break;
+              }
+
+            }, 100),
+            handleClick = function (e) {
+              if (!angular.element.contains(modal.children()[0], e.target)) {
+                close();
+              }
+            },
+            close = function (e) {
+              if (e && typeof e.stopPropagation === 'function') {
+                e.stopPropagation();
+              }
+              modal.removeClass('open');
+              body.off('click', handleClick);
+              body.off('keyup', handleKeypress);
+              closers.on('click', close);
+            },
+            open = function (e) {
+              e.stopPropagation();
+              modal.addClass('open');
+              body.on('click', handleClick);
+              body.on('keyup', handleKeypress);
+              closers.on('click', close);
+            };
+
+          openers.on('click', open);
+
+        });
+
+      }
+    }
+  })
   .directive('qvHighlight', function ($timeout) {
     return {
       restrict: 'A',
