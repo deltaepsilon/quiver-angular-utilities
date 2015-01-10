@@ -137,7 +137,7 @@ Pass in a percentage—between 0 and 1 inclusive—and ```qv-meter``` will set t
 
 ```
 <a class="qv-progress text-x-small success" qv-confirm="deleteFlowFile($flow, file)" confirmations="['Click to Delete']">
-    <span class="meter-text text-black">{{ file.name }}</span>
+    <span class="meter-text text-black0">{{ file.name }}</span>
     <span class="meter" qv-meter="file.percentComplete"></span>
 </a>
 ```
@@ -208,7 +208,7 @@ You'll need to add something like the following to your html—only the ```notif
 
 ```
 <aside id="notifications-wrapper">
-  <div notifications class="notifications column small-centered text-white"></div>
+  <div notifications class="notifications column small-centered text-white0"></div>
 </aside>
 ```
 

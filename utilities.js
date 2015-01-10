@@ -57,6 +57,21 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       return moment(input).format(format);
     };
   })
+  .directive('qvExclusive', function ($timeout) {
+    return {
+      restrict: 'A',
+      link: function postLink(scope, element, attrs) {
+        var name = attrs.name,
+          others = angular.element('[name="' + name + '"]').not(element);
+
+        element.on('change', function (e) {
+          if (element.prop('checked')) {
+            others.prop('checked', false);
+          }
+        });
+      }
+    }
+  })
   .directive('qvModal', function ($timeout, _) {
     return {
       restrict: 'A',
@@ -95,7 +110,10 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
               closers.on('click', close);
             },
             open = function (e) {
-              e.stopPropagation();
+              if (e && e.stopPropagation) {
+                e.stopPropagation();
+              }
+              
               modal.addClass('open');
               body.on('click', handleClick);
               body.on('keyup', handleKeypress);
@@ -103,6 +121,10 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
             };
 
           openers.on('click', open);
+
+          if (attrs.open) {
+            open();
+          }
 
         });
 
@@ -139,7 +161,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       restrict: 'A',
       transclude: true,
       scope: true,
-      template: '<div class="qv-lightbox"><div class="marquee"><div class="floating-button text-white prev show-for-medium-up"><</div><img class="next"><div class="floating-button text-white next show-for-medium-up">></div></div><div class="drawer" ng-transclude></div></div>',
+      template: '<div class="qv-lightbox"><div class="marquee"><div class="floating-button text-white0 prev show-for-medium-up"><</div><img class="next"><div class="floating-button text-white0 next show-for-medium-up">></div></div><div class="drawer" ng-transclude></div></div>',
       link: function postLink(scope, element, attrs) {
         var bootstrap = function () {
           var body = angular.element(document.body),
@@ -279,16 +301,29 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       link: function postLink(scope, element, attrs) {
         var evaluateClass = function () {
           var activeClass = attrs.qvActive || 'active',
-            link = angular.element(element).find('[ui-sref]'),
-            sref = link && link.attr ? link.attr('ui-sref') : null;
+            links = angular.element(element).find('[ui-sref]'),
+            found = false;
 
-          if (!sref) {
-            console.warn('ui-sref not found');
-          } else if (sref === $state.$current.name) {
+          links.each(function (index, link) {
+            if (link.attributes['ui-sref'].value === $state.$current.name) {
+              found = true;
+            }
+          });
+
+          if (found) {
             element.addClass(activeClass);
           } else {
             element.removeClass(activeClass);
           }
+
+
+          // if (!sref) {
+          //   console.warn('ui-sref not found');
+          // } else if (sref === $state.$current.name) {
+          //   element.addClass(activeClass);
+          // } else {
+          //   element.removeClass(activeClass);
+          // }
         };
 
         scope.$on('$stateChangeSuccess', evaluateClass);
@@ -366,7 +401,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
           setMinHeight = function () {
             var parentHeight = element.parent().height(),
               targetHeight = target.height(),
-              elementHeight = element.height();
+              elementHeight = element.outerHeight();
 
             element.css('min-height', targetHeight - (parentHeight - elementHeight));
           };
