@@ -57,6 +57,24 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       return moment(input).format(format);
     };
   })
+  .directive('qvFalse', function ($timeout) {
+    return {
+      restrict: 'A',
+      scope: {
+        'qvFalse': '='
+      },
+      link: function postLink(scope, element, attrs) {
+        var delay = attrs.delay ? parseInt(attrs.delay) : 300;
+        scope.$watch('qvFalse', function () {
+          if (scope.qvFalse) {
+            $timeout(function () {
+              scope.qvFalse = false;
+            }, delay);
+          }
+        });
+      }
+    };
+  })
   .directive('qvKeyUp', function () {
     return {
       restrict: 'A',
