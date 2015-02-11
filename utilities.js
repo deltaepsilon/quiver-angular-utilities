@@ -107,7 +107,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       }
     }
   })
-  .directive('qvModal', function ($timeout, _) {
+  .directive('qvModal', function ($timeout, _, $window) {
     return {
       restrict: 'A',
       transclude: true,
@@ -117,7 +117,6 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
           var body = angular.element(document.body),
             modal = element.find('.qv-modal'),
             selector = attrs.qvModal,
-            openers = angular.element(selector),
             closers = body.find('[qv-modal-close]'),
             handleKeypress = _.debounce(function (e) {
               switch (e.keyCode) {
@@ -150,12 +149,13 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
               }
               
               modal.addClass('open');
+              window.dispatchEvent(new Event('resize'));
               body.on('click', handleClick);
               body.on('keyup', handleKeypress);
               closers.on('click', close);
             };
 
-          openers.on('click', open);
+          body.on('click', selector, open);
 
           if (attrs.open) {
             open();
