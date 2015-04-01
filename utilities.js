@@ -57,6 +57,11 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router'])
       return moment(input).format(format);
     };
   })
+  .filter('timeago', function (moment) {
+    return function (input, arg) {
+      return moment(input).fromNow(arg);
+    };
+  })
   .directive('qvFalse', function ($timeout) {
     return {
       restrict: 'A',
