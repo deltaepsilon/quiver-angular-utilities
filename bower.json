@@ -1,6 +1,6 @@
 {
     "name": "quiver-angular-utilities",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "authors": [
         "Chris Esplin <chris@quiver.is>"
     ],
@@ -19,7 +19,7 @@
         "angular": "~1.2.0",
         "angular-notifications": "https://github.com/deltaepsilon/angular-notifications.git#master",
         "moment": "~2.8.2",
-        "angular-material": "~0.8.3"
+        "angular-material": "~0.9.6"
     },
     "devDependencies": {},
     "resolutions": {
