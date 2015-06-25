@@ -66,6 +66,17 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             return parseInt(input);
         };
     })
+    .directive('qvScroll', function($uiViewScroll) {
+        return {
+            restrict: 'A',
+            link: function postLink(scope, element, attrs) {
+                var target = angular.element(document.body).find('#' + attrs.qvScroll);
+                element.on('click', function (e) {
+                    $uiViewScroll(target);
+                });
+            }
+        };
+    })
     .directive('qvAnchorLinks', function($timeout, $rootScope) {
         return {
             restrict: 'A',
