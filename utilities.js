@@ -452,25 +452,9 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
     .directive('qvLoading', function($timeout) {
         return {
             restrict: 'A',
-            scope: {
-                loaded: '='
-            },
             link: function postLink(scope, element, attrs) {
                 var delay = parseInt(attrs.delay) || 300,
                     target = attrs.target ? angular.element(attrs.target) : element;
-
-                if (attrs.loaded) {
-                    scope.$watch('loaded', function() {
-                        if (scope.loaded) {
-                            $timeout(function() {
-                                element.css('visibility', 'hidden');
-                            }, delay);
-                        }
-
-                    });
-
-                }
-
 
                 target.on('click', function() {
                     $timeout(function() {
