@@ -8,7 +8,7 @@
 'use strict';
 
 angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMaterial'])
-    .provider('quiverUtilities', function() {
+    .provider('quiverUtilities', function () {
         return {
             env: {
                 environment: 'development',
@@ -22,13 +22,26 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                 duration: 4000,
                 enabled: true
             },
-            setEnv: function(env) {
+            setEnv: function (env) {
                 this.env = env;
+                if (this.env.facebook && this.env.facebook.analyticsId && !window.fbq) {
+                    !function (f, b, e, v, n, t, s) {
+                        if (f.fbq) return; n = f.fbq = function () {
+                            n.callMethod ?
+                            n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+                        }; if (!f._fbq) f._fbq = n;
+                        n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
+                        t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
+                    } (window,
+                        document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+
+                    fbq('init', this.env.facebook.analyticsId);
+                }
             },
-            setNotificationConfig: function(notificationConfig) {
+            setNotificationConfig: function (notificationConfig) {
                 this.notificationConfig = notificationConfig;
             },
-            $get: function() {
+            $get: function () {
                 return {
                     notificationConfig: this.notificationConfig,
                     env: this.env
@@ -36,37 +49,37 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .factory('moment', function($window) {
+    .factory('moment', function ($window) {
         return $window.moment;
     })
-    .factory('Stripe', function($window) {
+    .factory('Stripe', function ($window) {
         return $window.Stripe;
     })
-    .factory('braintree', function($window) {
+    .factory('braintree', function ($window) {
         return $window.braintree;
     })
-    .factory('_', function($window) {
+    .factory('_', function ($window) {
         return $window._;
     })
-    .factory('env', function(quiverUtilities) {
+    .factory('env', function (quiverUtilities) {
         return quiverUtilities.env;
     })
-    .filter('moment', function(moment) {
-        return function(input, format, incomingFormat) {
+    .filter('moment', function (moment) {
+        return function (input, format, incomingFormat) {
             return moment(input, incomingFormat).format(format);
         };
     })
-    .filter('timeago', function(moment) {
-        return function(input, arg) {
+    .filter('timeago', function (moment) {
+        return function (input, arg) {
             return moment(input).fromNow(arg);
         };
     })
-    .filter('integer', function() {
-        return function(input) {
+    .filter('integer', function () {
+        return function (input) {
             return parseInt(input);
         };
     })
-    .directive('qvScroll', function($uiViewScroll) {
+    .directive('qvScroll', function ($uiViewScroll) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
@@ -77,14 +90,14 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvAnchorLinks', function($timeout, $rootScope) {
+    .directive('qvAnchorLinks', function ($timeout, $rootScope) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
                 var body = angular.element(document.body),
-                    evaluate = function() {
-                        $timeout(function() {
-                            element.find("[href^='#']").each(function() {
+                    evaluate = function () {
+                        $timeout(function () {
+                            element.find("[href^='#']").each(function () {
                                 if (body.find(this.hash).length) {
                                     angular.element(this).show();
                                 } else {
@@ -97,7 +110,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
 
                 $rootScope.$on('$stateChangeSuccess', evaluate);
 
-                var off = $rootScope.$on('$stateChangeRender', function() {
+                var off = $rootScope.$on('$stateChangeRender', function () {
                     evaluate();
                     off();
                 });
@@ -105,7 +118,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvFalse', function($timeout) {
+    .directive('qvFalse', function ($timeout) {
         return {
             restrict: 'A',
             scope: {
@@ -113,9 +126,9 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             },
             link: function postLink(scope, element, attrs) {
                 var delay = attrs.delay ? parseInt(attrs.delay) : 300;
-                scope.$watch('qvFalse', function() {
+                scope.$watch('qvFalse', function () {
                     if (scope.qvFalse) {
-                        $timeout(function() {
+                        $timeout(function () {
                             scope.qvFalse = false;
                         }, delay);
                     }
@@ -123,14 +136,14 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvKeyUp', function() {
+    .directive('qvKeyUp', function () {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
                 if (attrs.keyCode) {
                     var keyCode = parseInt(attrs.keyCode);
 
-                    angular.element(document.body).on('keyup', function(e) {
+                    angular.element(document.body).on('keyup', function (e) {
                         if (e.keyCode === keyCode) {
                             scope.$eval(attrs.qvKeyUp);
                         }
@@ -140,14 +153,14 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvExclusive', function($timeout) {
+    .directive('qvExclusive', function ($timeout) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
                 var name = attrs.name,
                     others = angular.element('[name="' + name + '"]').not(element);
 
-                element.on('change', function(e) {
+                element.on('change', function (e) {
                     if (element.prop('checked')) {
                         others.prop('checked', false);
                     }
@@ -155,18 +168,18 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         }
     })
-    .directive('qvModal', function($timeout, _, $window) {
+    .directive('qvModal', function ($timeout, _, $window) {
         return {
             restrict: 'A',
             transclude: true,
             template: '<div class="qv-modal" ng-transclude></div>',
-            link: function(scope, element, attrs) {
-                $timeout(function() {
+            link: function (scope, element, attrs) {
+                $timeout(function () {
                     var body = angular.element(document.body),
                         modal = element.find('.qv-modal'),
                         selector = attrs.qvModal,
                         closers = body.find('[qv-modal-close]'),
-                        handleKeypress = _.debounce(function(e) {
+                        handleKeypress = _.debounce(function (e) {
                             switch (e.keyCode) {
                                 case 27:
                                     close();
@@ -177,12 +190,12 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                             }
 
                         }, 100),
-                        handleClick = function(e) {
+                        handleClick = function (e) {
                             if (!angular.element.contains(modal.children()[0], e.target)) {
                                 close();
                             }
                         },
-                        close = function(e) {
+                        close = function (e) {
                             if (e && typeof e.stopPropagation === 'function') {
                                 e.stopPropagation();
                             }
@@ -191,7 +204,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                             body.off('keyup', handleKeypress);
                             closers.on('click', close);
                         },
-                        open = function(e) {
+                        open = function (e) {
                             if (e && e.stopPropagation) {
                                 e.stopPropagation();
                             }
@@ -214,20 +227,20 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         }
     })
-    .directive('qvHighlight', function($timeout) {
+    .directive('qvHighlight', function ($timeout) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
-                var bootstrap = function() {
+                var bootstrap = function () {
                     var selector = attrs.selector || attrs.href,
                         targetClass = attrs.qvHighlight,
                         delay = parseInt(attrs.delay) || 2000;
 
-                    element.on('click', function() {
+                    element.on('click', function () {
                         var target = angular.element(selector);
 
                         target.addClass(targetClass);
-                        $timeout(function() {
+                        $timeout(function () {
                             target.removeClass(targetClass);
                         }, delay);
 
@@ -240,14 +253,14 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         }
     })
-    .directive('qvLightbox', function($timeout, _) {
+    .directive('qvLightbox', function ($timeout, _) {
         return {
             restrict: 'A',
             transclude: true,
             scope: true,
             template: '<div class="qv-lightbox"><div class="marquee"><div class="floating-button text-white0 prev show-for-medium-up"><</div><img class="next"><div class="floating-button text-white0 next show-for-medium-up">></div></div><div class="drawer" ng-transclude></div></div>',
             link: function postLink(scope, element, attrs) {
-                var bootstrap = function() {
+                var bootstrap = function () {
                     var body = angular.element(document.body),
                         modal = element.find('.qv-lightbox'),
                         marquee = modal.find('.marquee'),
@@ -261,7 +274,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                         selected = false,
                         open = false,
                         src,
-                        selectPrev = function() {
+                        selectPrev = function () {
                             selected = selected.prev();
                             if (!selected.length) {
                                 selected = items.last();
@@ -269,7 +282,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                             handleSelect(selected);
 
                         },
-                        selectNext = function() {
+                        selectNext = function () {
                             selected = selected.next();
                             if (!selected.length) {
                                 selected = items.first();
@@ -277,7 +290,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                             handleSelect(selected);
 
                         },
-                        handleKeypress = _.debounce(function(e) {
+                        handleKeypress = _.debounce(function (e) {
                             switch (e.keyCode) {
                                 case 27:
                                     handleClose();
@@ -294,7 +307,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                             }
 
                         }, 100),
-                        handleSelect = function(selected) {
+                        handleSelect = function (selected) {
                             drawer.find('.selected').removeClass('selected');
                             selected.addClass('selected');
                             image.attr('src', selected.find('img').attr('src'));
@@ -305,7 +318,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                             }
 
                         },
-                        handleClose = function() {
+                        handleClose = function () {
                             body.off('keyup', handleKeypress);
                             modal.removeClass('open');
                             selected = undefined;
@@ -315,19 +328,19 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
 
                         };
 
-                    items.on('click tap', function(e) {
+                    items.on('click tap', function (e) {
                         e.stopPropagation();
                         selected = angular.element(e.target).closest('li');
                         handleSelect(selected);
 
                     });
 
-                    prev.on('click tap', function(e) {
+                    prev.on('click tap', function (e) {
                         e.stopPropagation();
                         selectPrev();
                     });
 
-                    next.on('click tap', function(e) {
+                    next.on('click tap', function (e) {
                         e.stopPropagation();
                         selectNext();
                     });
@@ -341,7 +354,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         }
     })
-    .directive('qvPinned', function($timeout, $window, _) {
+    .directive('qvPinned', function ($timeout, $window, _) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
@@ -354,7 +367,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                     fixed = false,
                     limit,
                     on = false,
-                    handler = function(e) {
+                    handler = function (e) {
                         var top = rawElement.getBoundingClientRect().top,
                             offsetTop = parent.offset().top,
                             scrollTop = target.scrollTop();
@@ -379,16 +392,16 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvActive', function($timeout, $state) {
+    .directive('qvActive', function ($timeout, $state) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
-                var evaluateClass = function() {
+                var evaluateClass = function () {
                     var activeClass = attrs.qvActive || 'active',
                         links = angular.element(element).find('[ui-sref]'),
                         found = false;
 
-                    links.each(function(index, link) {
+                    links.each(function (index, link) {
                         if (link.attributes['ui-sref'].value === $state.$current.name) {
                             found = true;
                             if (typeof attrs.qvDisabled !== 'undefined') {
@@ -421,17 +434,17 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvDisplay', function($timeout) {
+    .directive('qvDisplay', function ($timeout) {
         return {
             restrict: 'A',
             scope: {
                 qvDisplay: "="
             },
-            link: function(scope, element, attrs) {
+            link: function (scope, element, attrs) {
                 if (attrs.qvDisplay) {
                     var unbind;
-                    $timeout(function() {
-                        unbind = scope.$watch('qvDisplay', function() {
+                    $timeout(function () {
+                        unbind = scope.$watch('qvDisplay', function () {
                             if (scope.qvDisplay) {
                                 element.removeAttr('style');
                                 unbind();
@@ -441,7 +454,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                     });
 
                 } else {
-                    $timeout(function() {
+                    $timeout(function () {
                         element.removeAttr('style');
                     });
                 }
@@ -449,15 +462,15 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         }
     })
-    .directive('qvLoading', function($timeout) {
+    .directive('qvLoading', function ($timeout) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
                 var delay = parseInt(attrs.delay) || 300,
                     target = attrs.target ? angular.element(attrs.target) : element;
 
-                target.on('click', function() {
-                    $timeout(function() {
+                target.on('click', function () {
+                    $timeout(function () {
                         element.css('visibility', 'visible');
                     }, delay);
                 });
@@ -465,13 +478,13 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvFullPage', function($timeout, $window, _) {
+    .directive('qvFullPage', function ($timeout, $window, _) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
                 var debounceDelay = parseInt(attrs.qvFullPage),
                     target = angular.element(attrs.target || document.body),
-                    setMinHeight = function() {
+                    setMinHeight = function () {
                         var parentHeight = element.parent().height(),
                             targetHeight = target.height(),
                             elementHeight = element.outerHeight();
@@ -490,27 +503,27 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvConfirm', function($timeout) {
+    .directive('qvConfirm', function ($timeout) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
-                $timeout(function() {
+                $timeout(function () {
                     var confirmations = attrs.confirmations ? scope.$eval(attrs.confirmations) : ['Click to confirm'],
                         buttonHtml = element.html(),
                         stack = confirmations.slice(0),
                         body = angular.element(document.body),
-                        handleBodyClicks = function(e) {
+                        handleBodyClicks = function (e) {
                             stack = confirmations.slice(0);
                             element.html(buttonHtml);
                             body.off('click', handleBodyClicks);
                         };
 
-                    element.on('click', function(e) {
+                    element.on('click', function (e) {
                         e.stopPropagation();
 
                         if (stack.length) {
                             element.text(stack.shift());
-                            $timeout(function() { // Gotta skip the initial click that changed the content of the element
+                            $timeout(function () { // Gotta skip the initial click that changed the content of the element
                                 body.on('click', handleBodyClicks);
                             });
 
@@ -525,19 +538,19 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvFocus', function($timeout) {
+    .directive('qvFocus', function ($timeout) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
-                element.on('click', function() {
-                    $timeout(function() {
+                element.on('click', function () {
+                    $timeout(function () {
                         angular.element(document.body).find(attrs.qvFocus).focus();
                     });
                 });
             }
         };
     })
-    .directive('qvMedia', function() {
+    .directive('qvMedia', function () {
         var img = ['jpg', 'jpeg', 'png', 'gif', 'tiff', 'ico', 'svg'],
             video = ['mp4', 'mpeg', 'webm', 'ogg', 'mov'],
             embed = ['pdf'],
@@ -586,14 +599,14 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvSelectText', function($timeout, $window) {
+    .directive('qvSelectText', function ($timeout, $window) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
                 var target = element[0];
 
-                element.on(attrs.events || 'focus click', function(e) {
-                    $timeout(function() {
+                element.on(attrs.events || 'focus click', function (e) {
+                    $timeout(function () {
                         if (attrs.qvSelectText) {
                             target = document.getElementById(attrs.qvSelectText);
                         }
@@ -616,14 +629,14 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvMeter', function() {
+    .directive('qvMeter', function () {
         return {
             restrict: 'A',
             scope: {
                 percent: "=qvMeter"
             },
             link: function postLink(scope, element, attrs) {
-                var setStyle = function() {
+                var setStyle = function () {
                     element.css({
                         'width': (Math.min(scope.percent, 1) * 100) + '%'
                     });
@@ -633,23 +646,23 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvEnter', function($timeout) {
+    .directive('qvEnter', function ($timeout) {
         return {
             restrict: 'A',
             link: function postLink(scope, element, attrs) {
-                var handleKeyup = function(e, force) {
-                        if (e.keyCode === 13 || force) {
-                            $timeout(function() {
-                                scope.$eval(attrs.qvEnter);
-                            });
-                        }
+                var handleKeyup = function (e, force) {
+                    if (e.keyCode === 13 || force) {
+                        $timeout(function () {
+                            scope.$eval(attrs.qvEnter);
+                        });
+                    }
 
-                    },
-                    ignore = function() {
+                },
+                    ignore = function () {
                         element.off('keyup', handleKeyup);
                         element.off('blur', ignore);
                     },
-                    listen = function() {
+                    listen = function () {
                         element.on('keyup', handleKeyup);
                         element.on('blur', ignore);
 
@@ -664,7 +677,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvTypeAhead', function($compile, $window, $timeout) {
+    .directive('qvTypeAhead', function ($compile, $window, $timeout) {
         var template = "<ul class='type-ahead' style='position: fixed;' ng-show='options.length'><li ng-repeat='option in options' ng-class='{active: activeIndex==$index}' index='{{ $index }}' value='{{ option.key }}'>{{ option.value }}</li></ul><div>{{ scope.options }}</div>";
 
         return {
@@ -674,10 +687,10 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                 include: '=',
                 exclude: '='
             },
-            link: function(scope, element, attrs, ngModel) {
+            link: function (scope, element, attrs, ngModel) {
                 // activate on focus, deactivate on blur
                 var parent = element.parent(),
-                    filter = function(word) {
+                    filter = function (word) {
                         if (attrs.noFilter) {
                             return scope.include;
                         }
@@ -710,8 +723,8 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
 
                         return options;
                     },
-                    handleKeyup = function(e) {
-                        scope.$apply(function() {
+                    handleKeyup = function (e) {
+                        scope.$apply(function () {
                             switch (e.keyCode) {
                                 case 40: // Arrow Down
                                     scope.activeIndex = typeof scope.activeIndex === 'undefined' ? 0 : Math.min(scope.options.length - 1, scope.activeIndex + 1);
@@ -753,7 +766,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
 
                     },
                     ul = $compile(template)(scope),
-                    placeUl = function() {
+                    placeUl = function () {
                         var offset = element.offset(),
                             topOffset = offset.top + element.outerHeight();
 
@@ -769,18 +782,18 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                             "z-index": 100
                         });
                     },
-                    handleUlClick = function(e) {
+                    handleUlClick = function (e) {
                         //            console.log('handle ul click');
                         var li = angular.element(e.target),
                             index = parseInt(li.attr('index'));
 
                         select(index);
-                        $timeout(function() {
+                        $timeout(function () {
                             scope.option = filter(element.val());
                         });
 
                     },
-                    activate = function() {
+                    activate = function () {
                         //            console.log('activate');
                         if (attrs.prepopulate) {
                             scope.options = filter(element.val());
@@ -788,7 +801,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
 
 
                         parent.append(ul);
-                        $timeout(function() {
+                        $timeout(function () {
                             placeUl();
                         });
 
@@ -797,8 +810,8 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                         element.on('keyup', handleKeyup);
                         ul.on('click', handleUlClick);
                     },
-                    deactivate = function() {
-                        $timeout(function() {
+                    deactivate = function () {
+                        $timeout(function () {
                             angular.element($window).off('resize', placeUl);
                             element.off('keyup', handleKeyup);
                             ul.off('click', handleUlClick);
@@ -807,7 +820,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
 
 
                     },
-                    select = function(i) {
+                    select = function (i) {
                         delete scope.activeIndex;
                         if (attrs.selection) {
                             if (attrs.selection === 'object') {
@@ -821,7 +834,7 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
 
                         ngModel.$render();
 
-                        $timeout(function() {
+                        $timeout(function () {
                             element.focus();
                         }, 300);
 
@@ -837,8 +850,8 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                 //        });
 
                 if (scope.exclude) {
-                    scope.$watch('exclude', function() {
-                        $timeout(function() {
+                    scope.$watch('exclude', function () {
+                        $timeout(function () {
                             placeUl();
                             scope.options = filter(element.val());
                         });
@@ -849,16 +862,16 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvBackgroundImage', function($state, $rootScope, $timeout) {
+    .directive('qvBackgroundImage', function ($state, $rootScope, $timeout) {
         return {
             restrict: 'A',
             scope: {
                 url: '=qvBackgroundImage'
             },
             link: function postLink(scope, element, attrs) {
-                $timeout(function() {
+                $timeout(function () {
                     var states = attrs.states ? scope.$eval(attrs.states) : false,
-                        stateHandler = function(e, to, from) {
+                        stateHandler = function (e, to, from) {
                             var state = to && to.name ? to.name : $state.current.name,
                                 background = 'initial';
 
@@ -878,11 +891,11 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         };
     })
-    .directive('qvToStatic', function() {
+    .directive('qvToStatic', function () {
         return {
             restrict: 'A',
-            link: function(scope, element, attrs) {
-                element.on('click', function(e) {
+            link: function (scope, element, attrs) {
+                element.on('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     location.replace(attrs.href || attrs.qvToStatic || '/');
@@ -891,17 +904,17 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             }
         }
     })
-    .service('ObjectService', function(_) {
+    .service('ObjectService', function (_) {
         var toDestroy = [];
 
         return {
-            toDestroy: function(obj) {
+            toDestroy: function (obj) {
                 if (obj) {
                     toDestroy.push(obj);
                 }
             },
 
-            destroy: function() {
+            destroy: function () {
                 var i = toDestroy.length;
 
                 while (i--) {
@@ -909,26 +922,26 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                 }
             },
 
-            cleanRestangular: function(obj) {
+            cleanRestangular: function (obj) {
                 return _.omit(obj, ['fromServer', 'parentResource', 'reqParams', 'restangularCollection', 'restangularEtag', 'route']);
             }
         }
 
     })
-    .service('NotificationService', function($notification, quiverUtilities, $mdToast) {
+    .service('NotificationService', function ($notification, quiverUtilities, $mdToast) {
         if (quiverUtilities.notificationConfig.toast) {
-            var getContent = function(title, content) {
-                    if (title && !content) {
-                        return title
-                    } else if (title && content) {
-                        return title + ': ' + content;
-                    } else if (content) {
-                        return content;
-                    } else {
-                        return 'Achtung! Your toast needs butter.';
-                    }
-                },
-                getPosition = function() {
+            var getContent = function (title, content) {
+                if (title && !content) {
+                    return title
+                } else if (title && content) {
+                    return title + ': ' + content;
+                } else if (content) {
+                    return content;
+                } else {
+                    return 'Achtung! Your toast needs butter.';
+                }
+            },
+                getPosition = function () {
                     return quiverUtilities.notificationConfig.toast.position || {
                         "bottom": false,
                         "top": true,
@@ -936,36 +949,36 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
                         "right": true
                     };
                 },
-                getDelay = function() {
+                getDelay = function () {
                     return quiverUtilities.notificationConfig.toast.hideDelay || 4000;
                 };
 
             return {
-                notify: function(title, content) {
+                notify: function (title, content) {
                     return $mdToast.show(
                         $mdToast.simple().content(getContent(title, content)).position(getPosition()).hideDelay(getDelay())
                     );
 
                 },
-                error: function(title, content) {
+                error: function (title, content) {
                     return $mdToast.show(
                         $mdToast.simple().content(getContent(title, content)).position(getPosition()).hideDelay(getDelay())
                     );
                 },
-                success: function(title, content) {
+                success: function (title, content) {
                     return $mdToast.show(
                         $mdToast.simple().content(getContent(title, content)).position(getPosition()).hideDelay(getDelay())
                     );
                 },
-                warning: function(title, content) {
+                warning: function (title, content) {
                     return $mdToast.show(
                         $mdToast.simple().content(getContent(title, content)).position(getPosition()).hideDelay(getDelay())
                     );
                 },
-                custom: function(config) {
+                custom: function (config) {
                     return $mdToast.show(config);
                 },
-                action: function(content, action, highlight) {
+                action: function (content, action, highlight) {
                     return $mdToast.show(
                         $mdToast.simple().content(getContent(title, content)).action(action || 'OK').highlightAction(highlight).position(getPosition())
                     );
@@ -976,16 +989,16 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
             $notification.setSetting('custom', quiverUtilities.notificationConfig);
 
             return {
-                notify: function(title, content, userData) {
+                notify: function (title, content, userData) {
                     return $notification.notify(null, title, content, userData, 'notify');
                 },
-                error: function(title, content, userData) {
+                error: function (title, content, userData) {
                     return $notification.notify(null, title, content, userData, 'error');
                 },
-                success: function(title, content, userData) {
+                success: function (title, content, userData) {
                     return $notification.notify(null, title, content, userData, 'success');
                 },
-                warning: function(title, content, userData) {
+                warning: function (title, content, userData) {
                     return $notification.notify(null, title, content, userData, 'warning');
                 }
             };
@@ -993,4 +1006,25 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
         }
 
 
+    })
+    .service('TrackingService', function (quiverUtilities, $window) {
+        var log = function () {
+            if (quiverUtilities.env.environment === 'development') {
+                console.log(arguments);
+            }
+        };
+        return {
+            track: function (eventName, parameters) {
+                if (fbq) {
+                    log('track', eventName, parameters);
+                    fbq('track', eventName, parameters);
+                }
+            },
+            trackCustom: function (eventName, parameters) {
+                if (fbq) {
+                    log('trackCustom', eventName, parameters);
+                    fbq('trackCustom', eventName, parameters);
+                }
+            }
+        }
     });
