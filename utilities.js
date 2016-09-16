@@ -37,6 +37,25 @@ angular.module('quiver.angular-utilities', ['notifications', 'ui.router', 'ngMat
 
                     fbq('init', this.env.facebook.analyticsId);
                 }
+                if (this.env.adRoll && this.env.adRoll.advId && this.env.adRoll.pixId) {
+                    window.adroll_adv_id = this.env.adRoll.advId;
+                    window.adroll_pix_id = this.env.adRoll.pixId;
+                    (function () {
+                        var _onload = function(){
+                            if (document.readyState && !/loaded|complete/.test(document.readyState)){setTimeout(_onload, 10);return}
+                            if (!window.__adroll_loaded){window.__adroll_loaded=true;setTimeout(_onload, 50);return}
+                            var scr = document.createElement("script");
+                            var host = (("https:" == document.location.protocol) ? "https://s.adroll.com" : "http://a.adroll.com");
+                            scr.setAttribute('async', 'true');
+                            scr.type = "text/javascript";
+                            scr.src = host + "/j/roundtrip.js";
+                            ((document.getElementsByTagName('head') || [null])[0] ||
+                                document.getElementsByTagName('script')[0].parentNode).appendChild(scr);
+                        };
+                        if (window.addEventListener) {window.addEventListener('load', _onload, false);}
+                        else {window.attachEvent('onload', _onload)}
+                    }());
+                }
             },
             setNotificationConfig: function (notificationConfig) {
                 this.notificationConfig = notificationConfig;
